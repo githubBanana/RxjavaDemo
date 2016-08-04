@@ -1,18 +1,25 @@
 package com.xs.rxjavademo;
 
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.BitmapImageViewTarget;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-
-import rx.Observer;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,11 +34,14 @@ public class MainActivity extends AppCompatActivity {
         mBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                glideTest();
             }
         });
 
         testThread();
+
     }
+
 
     private void testThread() {
         new Thread(new Runnable() {
@@ -61,22 +71,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void testRxJava() {
 
-        Observer<String> obsever = new Observer<String>() {
-            @Override
-            public void onCompleted() {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onNext(String s) {
-
-            }
-        };
 
     }
 
@@ -114,4 +108,53 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-}
+    private void glideTest() {
+        final ImageView mIv = (ImageView) findViewById(R.id.iv);
+        Glide.with(mIv.getContext())
+                .load(Uri.parse("http://nuuneoi.com/uploads/source/playstore/cover.jpg"))
+//                .load("http://nuuneoi.com/uploads/source/playstore/cover.jpg")
+                .asBitmap()
+                .placeholder(R.mipmap.ic_launcher) //占位图
+                .error(android.R.drawable.ic_dialog_alert)
+                .centerCrop()
+                .into(new BitmapImageViewTarget(mIv) {
+                    @Override
+                    protected void setResource(Bitmap resource) {
+                        super.setResource(resource);
+                         RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), resource);
+                        roundedBitmapDrawable.setCircular(false);
+                        getView().setImageDrawable(roundedBitmapDrawable);
+                    }
+                });
+
+        final ImageView mIv2 = (ImageView) findViewById(R.id.iv2);
+        new Thread(new Runnable() {
+            Bitmap bitmap = null;
+            @Override
+            public void run() {
+                try {
+                     bitmap = Glide.with(mIv2.getContext())
+                            .load(Uri.parse("http://nuuneoi.com/uploads/source/playstore/cover.jpg"))
+                            .asBitmap()
+                             .centerCrop()
+                             .into(300,300)
+                            .get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mIv2.setImageBitmap(bitmap);
+                    }
+                });
+            }
+        }).start();
+    }
+
+    }
+
+
