@@ -21,6 +21,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import rx.Observable;
+import rx.Subscriber;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -34,11 +41,13 @@ public class MainActivity extends AppCompatActivity {
         mBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                glideTest();
+//                glideTest();
+                testRxJava();
+
             }
         });
 
-        testThread();
+//        testThread();
 
     }
 
@@ -71,6 +80,56 @@ public class MainActivity extends AppCompatActivity {
 
     private void testRxJava() {
 
+       /* Observable<String> observable = Observable.create(new Observable.OnSubscribe<String>() {
+            @Override
+            public void call(Subscriber<? super String> subscriber) {
+                subscriber.onNext("nihao");
+                subscriber.onCompleted();
+            }
+        });
+        Subscription subscription = observable.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+                .subscribe(new Subscriber<String>() {
+            @Override
+            public void onCompleted() {
+                Toast.makeText(MainActivity.this,"onCompleted",Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(String s) {
+                Toast.makeText(MainActivity.this,"s",Toast.LENGTH_SHORT).show();
+            }
+        });*/
+
+
+        String[] array = {"111","222"};
+        Subscription subscription1 = Observable.from(array).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+                .map(new Func1<String, File>() {
+                    @Override
+                    public File call(String s) {
+                        return new File(s);
+                    }
+                }).subscribe(new Subscriber<File>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.e(TAG, "onCompleted: " );
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(File file) {
+
+                        Log.e(TAG, "onNext: "+file.getAbsolutePath() + file.exists());
+                    }
+                });
 
     }
 
