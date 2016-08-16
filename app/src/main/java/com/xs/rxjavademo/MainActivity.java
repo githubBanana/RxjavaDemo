@@ -23,9 +23,7 @@ import java.util.concurrent.ExecutionException;
 
 import rx.Observable;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -105,34 +103,48 @@ public class MainActivity extends AppCompatActivity {
             }
         });*/
 
+        getabc("111").doOnNext(s -> {
+            Toast.makeText(MainActivity.this,s,Toast.LENGTH_SHORT).show();
+            s = "222";
+            getabc(s).doOnNext(s1 ->
+                    Toast.makeText(MainActivity.this, s1,Toast.LENGTH_SHORT).show()).subscribe(new Subscriber<String>() {
+                @Override
+                public void onCompleted() {
+                    Log.e(TAG, "onCompleted: 222" );
+                }
 
-        String[] array = {"111","222"};
-        Subscription subscription1 = Observable.from(array).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
-                .map(new Func1<String, File>() {
-                    @Override
-                    public File call(String s) {
-                        return new File(s);
-                    }
-                }).subscribe(new Subscriber<File>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.e(TAG, "onCompleted: " );
-                    }
+                @Override
+                public void onError(Throwable e) {
 
-                    @Override
-                    public void onError(Throwable e) {
+                }
 
-                    }
+                @Override
+                public void onNext(String s) {
+                    Log.e(TAG, "onNext: 222" );
+                }
+            });
+        }).subscribe(new Subscriber<String>() {
+            @Override
+            public void onCompleted() {
+                Log.e(TAG, "onCompleted: 111" );
+            }
 
-                    @Override
-                    public void onNext(File file) {
+            @Override
+            public void onError(Throwable e) {
 
-                        Log.e(TAG, "onNext: "+file.getAbsolutePath() + file.exists());
-                    }
-                });
+            }
+
+            @Override
+            public void onNext(String s) {
+                Log.e(TAG, "onNext: 111" );
+            }
+        });
 
     }
 
+    public Observable<String> getabc(String s) {
+        return Observable.just(s).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io());
+    }
 
 
 
